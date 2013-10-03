@@ -7,7 +7,12 @@ class MoviesController < ApplicationController
   end
 
   def index
+	@all_ratings = Movie.list_rating
     @movies = Movie.sorting(params)
+	if !params[:ratings].blank?
+		@movies = @movies.select{|x| ratiing_list = params[:ratings].keys.include?(x.rating)}
+	end
+	
   end
 
   def new
