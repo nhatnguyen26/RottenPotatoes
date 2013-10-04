@@ -8,14 +8,32 @@ class MoviesController < ApplicationController
 
   def index
 	@all_ratings = Movie.list_rating
-	
+	@filter = []
+	@movies = []
 	if !params[:sort_by].nil?
-		@movies = Movie.find(:all, :order => "#{params[:sort_by]} ASC");
+		#@movies = Movie.find(:all, :order => "#{params[:sort_by]} ASC");
 	
-	elsif !params[:ratings].nil?
-		@movies = Movie.all.select{|x| params[:ratings].keys.include?(x.rating)}
+		if !params[:ratings].nil?
+			@filter = params[:ratings].keys
+			Movie.find(:all, :order => "#{params[:sort_by]} ASC").each do |movie|
+			if @filter.include?(movie.rating)
+				@movies << movie
+			end
+			end
+		else
+			@movies = Movie.find(:all, :order => "#{params[:sort_by]} ASC")
+		end
 	else
-		@movies = Movie.all
+		if !params[:ratings].nil?
+			@filter = params[:ratings].keys
+			Movie.find(:all).each do |movie|
+			if @filter.include?(movie.rating)
+				@movies << movie
+			end
+			end
+		else
+			@movies = Movie.all
+		end
 	end
 	
   end
