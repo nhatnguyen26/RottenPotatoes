@@ -8,20 +8,22 @@ class MoviesController < ApplicationController
 
   def index
 	@all_ratings = Movie.list_rating
-	if params[:sort_by].nil? && params[:ratings].nil?
+	if params[:sort_by].nil? && params[:ratings].nil?  && params[:commit].nil?
 		if params[:commit].nil?
-			session[:ratings] = {}
-			@all_ratings.each{|x| session[:ratings][x] = 1}
-			redirect_to(:action => :index, :sort_by => session[:sort_by], :ratings => session[:ratings])
-		else
-			flash.keep
-			redirect_to(:action => :index, :sort_by => session[:sort_by], :ratings => session[:ratings])
-		end		
-	elsif !params[:sort_by].nil? && params[:ratings].nil?
+			if session[:ratings].nil?
+				session[:ratings] = {}
+				@all_ratings.each{|x| session[:ratings][x] = 1}
+			end
+		flash.keep
+		redirect_to(:action => :index, :sort_by => session[:sort_by], :ratings => session[:ratings])
+		end
+	elsif (!params[:sort_by].nil? && params[:ratings].nil?)
 		flash.keep
 		redirect_to(:action => :index, :sort_by => params[:sort_by], :ratings => session[:ratings])
 	end
-	
+	if params[:sort_by].nil? && params[:ratings].nil? && !params[:commit].nil?
+		redirect_to(:action => :index, :sort_by => session[:sort_by], :ratings => session[:ratings])
+	end
 	
 	if !params[:sort_by].nil?
 		session[:sort_by] = params[:sort_by]
