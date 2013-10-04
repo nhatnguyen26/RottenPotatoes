@@ -7,34 +7,24 @@ class MoviesController < ApplicationController
   end
 
   def index
+	session.clear
+	if params[:sort_by].nil? && params[:ratings].nil?
+		redirect_to(:action => "index")
+	end
 	@all_ratings = Movie.list_rating
 	@filter = []
 	@movies = []
-	if !params[:sort_by].nil?
-		#@movies = Movie.find(:all, :order => "#{params[:sort_by]} ASC");
 	
-		if !params[:ratings].nil?
-			@filter = params[:ratings].keys
-			Movie.find(:all, :order => "#{params[:sort_by]} ASC").each do |movie|
-			if @filter.include?(movie.rating)
-				@movies << movie
-			end
-			end
-		else
-			@movies = Movie.find(:all, :order => "#{params[:sort_by]} ASC")
-		end
+	if !params[:ratings].nil?
+		@filter = params[:ratings].keys
+		Movie.find(:all, :order => "#{params[:sort_by]}").each{|x| @movies << x if params[:ratings].keys.include?(x.rating)}
 	else
-		if !params[:ratings].nil?
-			@filter = params[:ratings].keys
-			Movie.find(:all).each do |movie|
-			if @filter.include?(movie.rating)
-				@movies << movie
-			end
-			end
-		else
-			@movies = Movie.all
-		end
+		@movies = Movie.find(:all, :order => "#{params[:sort_by]}")
 	end
+	
+	session[:sort_by] = params[:sort_by]
+	session[:ratings] = params[:ratings]
+
 	
   end
 
