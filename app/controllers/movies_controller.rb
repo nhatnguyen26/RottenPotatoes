@@ -7,25 +7,37 @@ class MoviesController < ApplicationController
   end
 
   def index
-	session.clear
-	if params[:sort_by].nil? && params[:ratings].nil?
-		redirect_to(:action => "index")
-	end
 	@all_ratings = Movie.list_rating
+	if params[:sort_by].nil? && params[:ratings].nil?
+		if params[:commit].nil?
+			session[:ratings] = {}
+			@all_ratings.each{|x| session[:ratings][x] = 1}
+			redirect_to(:action => :index, :sort_by => session[:sort_by], :ratings => session[:ratings])
+		else
+			flash.keep
+			redirect_to(:action => :index, :sort_by => session[:sort_by], :ratings => session[:ratings])
+		end		
+	elsif !params[:sort_by].nil? && params[:ratings].nil?
+		flash.keep
+		redirect_to(:action => :index, :sort_by => params[:sort_by], :ratings => session[:ratings])
+	end
+	
+	
+	if !params[:sort_by].nil?
+		session[:sort_by] = params[:sort_by]
+	end
+	if !params[:ratings].nil?
+		session[:ratings] = params[:ratings]
+	end
 	@filter = []
 	@movies = []
 	
 	if !params[:ratings].nil?
 		@filter = params[:ratings].keys
-		Movie.find(:all, :order => "#{params[:sort_by]}").each{|x| @movies << x if params[:ratings].keys.include?(x.rating)}
+		Movie.find(:all, :order => "#{session[:sort_by]}").each{|x| @movies << x if session[:ratings].keys.include?(x.rating)}
 	else
-		@movies = Movie.find(:all, :order => "#{params[:sort_by]}")
+		@movies = Movie.find(:all, :order => "#{session[:sort_by]}")
 	end
-	
-	session[:sort_by] = params[:sort_by]
-	session[:ratings] = params[:ratings]
-
-	
   end
 
   def new
